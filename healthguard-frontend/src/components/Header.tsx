@@ -1,7 +1,14 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthPage = ['/signin', '/register'].includes(location.pathname);
+
+  if (isAuthPage) return null;
+
   return (
     <header className="bg-white shadow">
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -13,10 +20,16 @@ const Header = () => {
             </h1>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            <button
+              onClick={() => navigate('/signin')}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
               Sign In
             </button>
-            <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50">
+            <button
+              onClick={() => navigate('/register')}
+              className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50"
+            >
               Register
             </button>
           </div>
