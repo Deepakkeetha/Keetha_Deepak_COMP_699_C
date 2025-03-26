@@ -40,17 +40,39 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # apps
     'website',
+    'accounts',
      # third party apps
     'crispy_forms',
     'crispy_bootstrap5',
     'phonenumber_field',
+    'captcha',
     'cloudinary_storage',
     'cloudinary',
     'debug_toolbar',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
+]
+
+LOGIN_URL = 'accounts:login'
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# Custom Authentication settings
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+PHONENUMBER_DEFAULT_REGION = "US"
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,6 +83,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'fintrack.urls'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 TEMPLATES = [
     {
@@ -84,10 +110,15 @@ WSGI_APPLICATION = 'fintrack.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'fintrack',
+        'USER': 'root',
+        'PASSWORD': 'manunite1',
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
 
@@ -137,3 +168,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# RECAPTCHA
+RECAPTCHA_PUBLIC_KEY = "RECAPTCHA_PUBLIC_KEY"
+RECAPTCHA_PRIVATE_KEY = "RECAPTCHA_PRIVATE_KEY"
+SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
