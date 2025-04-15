@@ -1,4 +1,4 @@
-# Fintrack (Persoanl Finance Tracker with Budget Optimization)
+# Fintrack (Personal Finance Tracker with Budget Optimization)
 
 ## Prerequisites
 
