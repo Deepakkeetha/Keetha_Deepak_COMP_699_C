@@ -22,5 +22,6 @@ urlpatterns = [
     path('', include('website.urls')),
     path('accounts/', include('accounts.urls')),
     path('my_finances/', include('my_finances.urls')),
-    path('budget_section/', include('budget_section.urls'))
+    path('budget_section/', include('budget_section.urls')),
+    path('savings_section/', include('savings_section.urls'))
 ]
