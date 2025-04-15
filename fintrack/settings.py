@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'website',
     'accounts',
     'my_finances',
+    'budget_section',
      # third party apps
     'crispy_forms',
     'crispy_bootstrap5',
