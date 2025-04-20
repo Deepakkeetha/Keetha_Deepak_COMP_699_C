@@ -277,31 +277,34 @@ def year_overview(request):
 @login_required
 def get_summary_tiles(request):
     today = date.today()
-    last_balance = Balance.objects.filter(user=request.user, type=1).order_by('-date').first()
+    last_balance = Balance.objects.filter(user=request.user).order_by('-date').first()
+    total_balance = Balance.objects.filter(user=request.user).aggregate(total=Sum('value'))['total']
+    total_balance = 0 if total_balance is None else total_balance
+    beginning_of_year = date(today.year, 1, 1)
     if not last_balance:
         return JsonResponse({'error': 'No current balance has been recorded. '
                                       'Please add at least one current balance record.'})
     # initialise totals with sums of non-repetitive incomes and outcomes
     total_income = Income.objects \
-        .filter(user=request.user, date__gt=last_balance.date, date__lte=today, repetitive=False) \
+        .filter(user=request.user, repetitive=False) \
         .aggregate(total=Sum('value'))['total']
     print(total_income)
     total_income = 0 if total_income is None else total_income
     total_outcome = Outcome.objects \
-        .filter(user=request.user, date__gt=last_balance.date, date__lte=today, repetitive=False) \
+        .filter(user=request.user, repetitive=False) \
         .aggregate(total=Sum('value'))['total']
     total_outcome = 0 if total_outcome is None else total_outcome
 
     # updated totals with repetitive
     for income in Income.objects.filter(user=request.user, repetitive=True):
-        total_income += calculate_repetitive_total(income, last_balance.date, today)
+        total_income += calculate_repetitive_total(income, beginning_of_year, today)
     for outcome in Outcome.objects.filter(user=request.user, repetitive=True):
-        total_outcome += calculate_repetitive_total(outcome, last_balance.date, today)
+        total_outcome += calculate_repetitive_total(outcome, beginning_of_year, today)
         print(total_outcome)
     return JsonResponse({
         'last_balance_value': last_balance.value,
         'last_balance_date': last_balance.date,
-        'estimated_balance': last_balance.value + total_income - total_outcome,
+        'estimated_balance': total_balance + total_income - total_outcome,
         'total_income': total_income,
         'total_outcome': total_outcome
     })
@@ -317,12 +320,10 @@ def get_year_chart(request):
     beginning_of_year = date(today.year, 1, 1)
     end_of_year = date(today.year, 12, 28)
     # Try to get last balance check before the beginning of this year
-    balance = Balance.objects.filter(user=request.user, type=1 if balance_type == 'current' else 2,
-                                     date__lte=beginning_of_year).order_by('-date').first()
+    balance = Balance.objects.filter(user=request.user, date__lte=beginning_of_year).order_by('-date').first()
     if balance is None:
         # If there's no balance check before the year - get this first one of this year
-        balance = Balance.objects.filter(user=request.user, type=1 if balance_type == 'current' else 2) \
-            .order_by('date').first()
+        balance = Balance.objects.filter(user=request.user).order_by('date').first()
         if balance is None:
             return JsonResponse({'error': 'No current balance has been recorded. '
                                           'Please add at least one current balance record.'})
@@ -332,43 +333,43 @@ def get_year_chart(request):
     income_per_day = {}
     outcome_per_day = {}
 
-    for b in Balance.objects.filter(user=request.user, type=1 if balance_type == 'current' else 2,
-                                    date__gte=balance.date):
-        balance_checks[str(b.date)] = b.value
+    for b in Balance.objects.filter(user=request.user, date__gte=beginning_of_year):
+        balance_checks[str(b.date)] = b.value if str(b.date) not in balance_checks \
+            else balance_checks[str(b.date)] + b.value
 
     if balance_type == 'current':
-        for i in Income.objects.filter(user=request.user, date__gte=balance.date, repetitive=False):
+        for i in Income.objects.filter(user=request.user, date__gte=beginning_of_year, repetitive=False):
             income_per_day[str(i.date)] = i.value if str(i.date) not in income_per_day \
                 else income_per_day[str(i.date)] + i.value
-        for o in Outcome.objects.filter(user=request.user, date__gte=balance.date, repetitive=False):
+        for o in Outcome.objects.filter(user=request.user, date__gte=beginning_of_year, repetitive=False):
             outcome_per_day[str(o.date)] = o.value if str(o.date) not in outcome_per_day \
                 else outcome_per_day[str(o.date)] + o.value
 
         for income in Income.objects.filter(user=request.user, repetitive=True):
-            calculate_repetitive_total(income, balance.date, end_of_year, income_per_day)
+            calculate_repetitive_total(income, beginning_of_year, end_of_year, income_per_day)
         for outcome in Outcome.objects.filter(user=request.user, repetitive=True):
-            calculate_repetitive_total(outcome, balance.date, end_of_year, outcome_per_day)
+            calculate_repetitive_total(outcome, beginning_of_year, end_of_year, outcome_per_day)
     else:
         # If balance_type is savings, we want to only look at incomes and outcomes of type SAVINGS
         # Also, income of type SAVINGS will act like an outcome for savings balance and vice versa
-        for i in Income.objects.filter(user=request.user, date__gte=balance.date, type=5, repetitive=False):
+        for i in Income.objects.filter(user=request.user, date__gte=beginning_of_year, type=5, repetitive=False):
             outcome_per_day[str(i.date)] = i.value if str(i.date) not in outcome_per_day \
                 else outcome_per_day[str(i.date)] + i.value
-        for o in Outcome.objects.filter(user=request.user, date__gte=balance.date, type=10, repetitive=False):
+        for o in Outcome.objects.filter(user=request.user, date__gte=beginning_of_year, type=10, repetitive=False):
             income_per_day[str(o.date)] = o.value if str(o.date) not in income_per_day \
                 else income_per_day[str(o.date)] + o.value
 
         for income in Income.objects.filter(user=request.user, type=5, repetitive=True):
-            calculate_repetitive_total(income, balance.date, end_of_year, outcome_per_day)
+            calculate_repetitive_total(income, beginning_of_year, end_of_year, outcome_per_day)
         for outcome in Outcome.objects.filter(user=request.user, type=10, repetitive=True):
-            calculate_repetitive_total(outcome, balance.date, end_of_year, income_per_day)
+            calculate_repetitive_total(outcome, beginning_of_year, end_of_year, income_per_day)
 
     labels = []
     data_estimated = []
     data_balance_check = []
     data_today = []
-    date_marker = balance.date
-    balance_on_marker_date = balance.value
+    date_marker = beginning_of_year
+    balance_on_marker_date = 0
 
     if date_marker > beginning_of_year:
         fill_date_marker = date(today.year, 1, 1)
@@ -388,7 +389,7 @@ def get_year_chart(request):
     while date_marker <= end_of_year:
         labels.append(str(date_marker))
         if str(date_marker) in balance_checks:
-            balance_on_marker_date = balance_checks[str(date_marker)]
+            balance_on_marker_date += balance_checks[str(date_marker)]
             data_balance_check.append(balance_checks[str(date_marker)])
         else:
             balance_on_marker_date += income_per_day.get(str(date_marker), 0)
@@ -402,6 +403,7 @@ def get_year_chart(request):
         date_marker += timedelta(days=1)
     return JsonResponse({'labels': labels, 'data_estimated': data_estimated, 'data_balance_check': data_balance_check,
                          'data_today': data_today})
+    
 
 
 @login_required()
@@ -423,8 +425,8 @@ def get_income_or_outcome_by_type(request):
         if not last_balance:
             return JsonResponse({'error': 'No current balance has been recorded. '
                                           'Please add at least one current balance record.'})
-        start_date = last_balance.date
-        end_date = today
+        start_date = date(today.year - 1, 12, 31)
+        end_date = date(today.year, 12, 31)
     elif summary_type == 'year_overview':
         start_date = date(today.year - 1, 12, 31)
         end_date = date(today.year, 12, 31)

@@ -16,8 +16,8 @@ $(document).ready(function () {
         doughnut_chart(res, 'outcome_by_type')
     });
 
-    $.get("/my_finances/get_year_chart?balance_type=savings", function (res) {
-        line_chart(res, 'savings_year')
-    });
+    // $.get("/my_finances/get_year_chart?balance_type=savings", function (res) {
+    //     line_chart(res, 'savings_year')
+    // });
 
 })
