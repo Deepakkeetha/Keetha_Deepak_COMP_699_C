@@ -312,14 +312,22 @@ class GetSummaryTiles(TemplateView):
 
         labels_3 = []
         data_3 = []
+        
+        earliest_transaction = Transaction.objects.filter(budget=budget).earliest('date')
+        latest_transaction = Transaction.objects.filter(budget=budget).latest('date')
 
+        days = latest_transaction.date - earliest_transaction.date + timedelta(days=1)
+
+        date = earliest_transaction.date
+        
         # Queries for the line chart
-        for i in range(7):
-            date = today - timedelta(days=i)
+        for i in range(days.days):
             serialized_date = date.isoformat()
             total_spent = float(transactions.filter(date=date).aggregate(Sum('amount'))['amount__sum'] or 0)
             labels.append(serialized_date)
             data.append(total_spent)
+            date += timedelta(days=1)
+        
         context['labels'] = json.dumps(labels)
         context['data'] = json.dumps(data)
 
@@ -327,8 +335,7 @@ class GetSummaryTiles(TemplateView):
         for category in categories:
             amount = Transaction.objects.filter(
                 budget=budget,
-                category=category,
-                date__gte=datetime.now() - timedelta(days=7)
+                category=category
             ).aggregate(Sum('amount')).get('amount__sum') or 0
             labels_2.append(category.name)
             data_2.append(float(amount))
@@ -338,8 +345,7 @@ class GetSummaryTiles(TemplateView):
         # Queries for bar chart
         for budget in budgets:
             amount = Transaction.objects.filter(
-                budget=budget,
-                date__gte=datetime.now() - timedelta(days=7)
+                budget=budget
             ).aggregate(Sum('amount')).get('amount__sum') or 0
             labels_3.append(budget.name)
             data_3.append(float(amount))
