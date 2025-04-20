@@ -128,7 +128,8 @@ class SavingsAccountSummaryTiles(TemplateView):
             context['savings_goal_amount'] = savings_goal_object.amount
         except SavingsGoal.DoesNotExist:
             # If savings goal does not exist, add an error message to the context
-            context['error_message'] = 'Savings goal data not found.'
+            context['error_message'] = 'Savings goal data not found. Add at least one savings goal!'
+            return context
 
         # Calculate the total deposits made to the SavingsAccount
         total_deposits = savings_object.deposit_set.aggregate(total_deposits=Sum('amount'))['total_deposits'] or 0
@@ -138,11 +139,11 @@ class SavingsAccountSummaryTiles(TemplateView):
                                 'total_withdrawals'] or 0
 
         # Calculate number of savings account for a user
-        num_savings_account = SavingsAccount.objects.aggregate(num_savings_account=Count('id'))[
+        num_savings_account = SavingsAccount.objects.filter(user=self.request.user).aggregate(num_savings_account=Count('id'))[
                                   'num_savings_account'] or 0
 
         # Calculate the number of savings goals for the user
-        num_savings_goal = SavingsGoal.objects.aggregate(num_savings_goal=Count('id'))['num_savings_goal'] or 0
+        num_savings_goal = SavingsGoal.objects.filter(user=self.request.user).aggregate(num_savings_goal=Count('id'))['num_savings_goal'] or 0
 
         # Calculate the number of deposits made to the SavingsAccount
         num_deposits = savings_object.deposit_set.aggregate(num_deposits=Count('id'))['num_deposits'] or 0
