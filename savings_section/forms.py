@@ -51,6 +51,10 @@ class SavingsAccountForm(forms.ModelForm):
 
 
 class DepositForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):  # Accept user as a parameter
+        super().__init__(*args, **kwargs)
+        self.fields['savings'].queryset = SavingsAccount.objects.filter(user=user)
+        
     def is_valid(self):
         is_valid = super().is_valid()
         # add custom validation logic for the name field
@@ -76,6 +80,10 @@ class DepositForm(forms.ModelForm):
 
 
 class WithdrawalForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):  # Accept user as a parameter
+        super().__init__(*args, **kwargs)
+        self.fields['savings'].queryset = SavingsAccount.objects.filter(user=user)
+    
     def is_valid(self):
         is_valid = super().is_valid()
         # add custom validation logic for the name field
@@ -107,6 +115,10 @@ class WithdrawalForm(forms.ModelForm):
 
 
 class SavingsGoalForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):  # Accept user as a parameter
+        super().__init__(*args, **kwargs)
+        self.fields['savings'].queryset = SavingsAccount.objects.filter(user=user)
+    
     def is_valid(self):
         is_valid = super().is_valid()
         # add custom validation logic for the name field

@@ -33,6 +33,11 @@ class CategoryForm(forms.ModelForm):
 
 
 class TransactionForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):  # Accept user as a parameter
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = Category.objects.filter(user=user)
+        self.fields['budget'].queryset = Budget.objects.filter(user=user)
+        
     def is_valid(self):
         is_valid = super().is_valid()
         # add custom validation logic for the name field

@@ -223,6 +223,11 @@ class DepositCreateView(CreateView):
     form_class = DepositForm
     template_name = 'savings_section/savings_section_form.html'
     extra_context = {'header': 'Add Deposit'}
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the user to the form's __init__
+        return kwargs
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -301,6 +306,11 @@ class WithdrawalCreateView(CreateView):
     form_class = WithdrawalForm
     template_name = 'savings_section/savings_section_form.html'
     extra_context = {'header': 'Add Withdrawal'}
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the user to the form's __init__
+        return kwargs
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -379,6 +389,11 @@ class SavingsGoalCreateView(CreateView):
     form_class = SavingsGoalForm
     template_name = 'savings_section/savings_section_form.html'
     extra_context = {'header': 'Add SavingsGoal'}
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the user to the form's __init__
+        return kwargs
 
     def form_valid(self, form):
         self.object = form.save(commit=False)

@@ -192,6 +192,11 @@ class TransactionCreateView(CreateView):
     form_class = TransactionForm
     template_name = 'budget_section/category_transaction_budget_form.html'
     extra_context = {'header': 'Add Transaction'}
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the user to the form's __init__
+        return kwargs
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -313,12 +318,18 @@ class GetSummaryTiles(TemplateView):
         labels_3 = []
         data_3 = []
         
-        earliest_transaction = Transaction.objects.filter(budget=budget).earliest('date')
-        latest_transaction = Transaction.objects.filter(budget=budget).latest('date')
+        try:
+            # Get transactions
+            earliest_transaction = Transaction.objects.filter(budget=budget).earliest('date')
+            latest_transaction = Transaction.objects.filter(budget=budget).latest('date')
 
-        days = latest_transaction.date - earliest_transaction.date + timedelta(days=1)
+            days = latest_transaction.date - earliest_transaction.date + timedelta(days=1)
 
-        date = earliest_transaction.date
+            date = earliest_transaction.date
+        except Transaction.DoesNotExist:
+            # If transaction does not exist, add an error message to the context
+            context['error_message'] = 'Transaction data not found. Add at least one transaction!'
+            return context
         
         # Queries for the line chart
         for i in range(days.days):

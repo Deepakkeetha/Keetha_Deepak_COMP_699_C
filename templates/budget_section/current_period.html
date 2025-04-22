@@ -7,6 +7,11 @@
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Budget name -> <b>{{budget_name}}</b></h1>
     </div>
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+      {{ error_message }}
+    </div>
+    {% endif %}
 {% if budget %}
     <div class="row" id="summary_tiles">
 
