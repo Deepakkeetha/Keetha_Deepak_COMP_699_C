@@ -12,26 +12,10 @@ class SavingsAccountForm(forms.ModelForm):
     def is_valid(self):
         is_valid = super().is_valid()
         # add custom validation logic for the name field
-        def generate_slug(text):
-            # Convert to lowercase
-            text = text.lower()
-            # Remove non-alphanumeric characters except spaces
-            text = re.sub(r'[^a-z0-9\s-]', '', text)
-            # Replace multiple spaces or hyphens with a single space
-            text = re.sub(r'[\s-]+', ' ', text)
-            # Replace spaces with hyphens
-            slug = re.sub(r'\s', '-', text)
-            return slug
-        
-        account = SavingsAccount.objects.filter(slug=generate_slug(self.cleaned_data['name']))
-        
         if 'name' in self.cleaned_data:
             name = self.cleaned_data['name']
             if name.startswith('X'):  # name should not start with 'X'
                 self.add_error(field='name', error='Name should not start with X')
-                is_valid = False
-            elif account.exists():
-                self.add_error(field='name', error='Name already exists. Choose a different name!') 
                 is_valid = False
                 
         if 'balance' in self.cleaned_data:

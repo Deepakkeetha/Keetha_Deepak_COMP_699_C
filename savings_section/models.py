@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+from utilities.utils import generate_random_string
 
 
 # Create your models here.
@@ -15,7 +16,7 @@ class SavingsAccount(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -34,7 +35,7 @@ class Deposit(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -53,7 +54,7 @@ class Withdrawal(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -72,7 +73,7 @@ class SavingsGoal(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):

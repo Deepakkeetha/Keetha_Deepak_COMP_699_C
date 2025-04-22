@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+from utilities.utils import generate_random_string
 
 
 class Budget(models.Model):
@@ -15,7 +16,7 @@ class Budget(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -32,7 +33,7 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -56,7 +57,7 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = slugify(self.title+generate_random_string())
         super().save(*args, **kwargs)
 
     def __str__(self):
