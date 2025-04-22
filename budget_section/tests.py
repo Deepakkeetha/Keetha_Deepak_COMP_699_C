@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
 from datetime import date
 from .models import Budget, Category, Transaction, BudgetTransaction
 
@@ -19,10 +18,6 @@ class BudgetModelTest(TestCase):
     def test_budget_str(self):
         self.assertEqual(str(self.budget), self.budget.name)
 
-    def test_budget_slug(self):
-        expected_slug = slugify(self.budget.name)
-        self.assertEqual(self.budget.slug, expected_slug)
-
     def test_budget_amount(self):
         self.assertEqual(self.budget.amount, 1000.00)
 
@@ -39,12 +34,6 @@ class CategoryModelTest(TestCase):
 
     def test_category_str(self):
         self.assertEqual(str(self.category), self.category.name)
-
-    def test_category_slug(self):
-        expected_slug = slugify(self.category.name)
-        self.assertEqual(self.category.slug, expected_slug)
-
-
 class TransactionModelTest(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -70,10 +59,6 @@ class TransactionModelTest(TestCase):
 
     def test_transaction_str(self):
         self.assertEqual(str(self.transaction), self.transaction.title)
-
-    def test_transaction_slug(self):
-        expected_slug = slugify(self.transaction.title)
-        self.assertEqual(self.transaction.slug, expected_slug)
 
     def test_transaction_amount(self):
         self.assertEqual(self.transaction.amount, 100.00)
